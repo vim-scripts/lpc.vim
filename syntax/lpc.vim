@@ -2,10 +2,12 @@
 " Language:	LPC
 " Maintainer:	Pan Shizhu <dicpan@hotmail.com>
 " URL:		http://poet.tomud.com/vim_lpc.html
-" Last Change:	21 June 2003
+" Last Change:	21 June 2004
 " Comments:	If you are using Vim 6.2 or later, see :h lpc.vim for 
 " 		file type recognizing, if not, you had to use modeline.
 " History:
+" 21 Jun 2004	Highlighting for Closures
+" 17 Jun 2004	Removed some C-specific syntax
 " 21 Jun 2003	Vim_LPC Support URL created
 " 15 Jun 2003	Bugfix: keyword efuns such as 'new' now always highlighted
 " 12 Jun 2003	Bug in runtime file:
@@ -99,6 +101,17 @@ syn match	lpcFuncName	/(:\s*\h\+\s*:)/me=e-1 contains=lpcApplies,@lpcEfunGroup t
 syn match	lpcFuncName	/(:\s*\h\+,/ contains=lpcApplies,@lpcEfunGroup transparent display contained
 syn match	lpcFuncName	/\$(\h\+)/ contains=lpcApplies,@lpcEfunGroup transparent display contained
 
+" Match for Closures
+syn match lpcClosure "#'\(\h\w*::\)\=\h\w*"
+syn match lpcClosure "#'([[{]"
+syn match lpcClosure "#'\[<\?\.\.<\?\]\?"
+syn match lpcClosure "#'[[,?]"
+syn match lpcClosure "#'[-=<>+*/!%&|^]=\?"
+syn match lpcClosure "#'&&"
+syn match lpcClosure "#'||"
+syn match lpcClosure "#'!?"
+syn match lpcClosure "'\h\w*\>"
+
 " Applies list.
 "       system applies
 syn keyword     lpcApplies      contained __INIT clean_up create destructor heart_beat id init move_or_destruct reset
@@ -182,7 +195,7 @@ syn keyword     lpcConstant     MUD_NAME F__THIS_OBJECT
 " About variables : We adopts the same behavior for C because almost all the
 " LPC programmers are also C programmers, so we don't need separate settings
 " for C and LPC. That is the reason why I don't change variables like
-" "c_no_utf"s to "lpc_no_utf"s.
+" "c_no_if0"s to "lpc_no_if0"s.
 "
 " Copy : Some of the following seems to be copied from c.vim but not quite 
 " the same in details because the syntax for C and LPC is different.
@@ -191,8 +204,8 @@ syn keyword     lpcConstant     MUD_NAME F__THIS_OBJECT
 " for all of the dark-backgrounded color schemes Vim has provided officially,
 " and it should be quite Ok for all of the bright-backgrounded color schemes,
 " of course it works best for the color scheme that I am using, download it 
-" from http://poet.tomud.com/pub/ps_color.vim.bz2 if you want to try it.
-"
+" from http://vim.sourceforge.net/scripts/script.php?script_id=760 if you want
+" to try it.
 
 " Nodule: String and Character {{{1
 
@@ -200,9 +213,6 @@ syn keyword     lpcConstant     MUD_NAME F__THIS_OBJECT
 " String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match	lpcSpecial	display contained "\\\(x\x\+\|\o\{1,3}\|.\|$\)"
-if !exists("c_no_utf")
-  syn match	lpcSpecial	display contained "\\\(u\x\{4}\|U\x\{8}\)"
-endif
 
 " LPC version of sprintf() format, 
 syn match	lpcFormat	display "%\(\d\+\)\=[-+ |=#@:.]*\(\d\+\)\=\('\I\+'\|'\I*\\'\I*'\)\=[OsdicoxXf]" contained
@@ -277,8 +287,8 @@ syn match	lpcFloat	display contained "\d\+\.\d*\(e[-+]\=\d\+\)\=[fl]\="
 syn match	lpcFloat	display contained "\.\d\+\(e[-+]\=\d\+\)\=[fl]\=\>"
 " floating point number, without dot, with exponent
 syn match	lpcFloat	display contained "\d\+e[-+]\=\d\+[fl]\=\>"
-" flag an octal number with wrong digits
-syn match	lpcOctalError	display contained "0\o*[89]\d*"
+" an octal number with wrong digits is allowed, since the octal is treated as
+" decimal in LPC
 syn case match
 
 " Nodule: Comment string {{{1
@@ -328,7 +338,7 @@ endif
 
 " Highlight Labels
 " User labels in LPC is not allowed, only "case x" and "default" is supported
-syn cluster	lpcMultiGroup	contains=lpcIncluded,lpcSpecial,lpcCommentSkip,lpcCommentString,lpcComment2String,@lpcCommentGroup,lpcCommentStartError,lpcUserCont,lpcUserLabel,lpcBitField,lpcOctalZero,lpcCppOut,lpcCppOut2,lpcCppSkip,lpcFormat,lpcNumber,lpcFloat,lpcOctal,lpcOctalError,lpcNumbersCom,lpcCppParen,lpcCppBracket,lpcCppString,lpcKeywdError
+syn cluster	lpcMultiGroup	contains=lpcIncluded,lpcSpecial,lpcCommentSkip,lpcCommentString,lpcComment2String,@lpcCommentGroup,lpcCommentStartError,lpcUserCont,lpcUserLabel,lpcBitField,lpcOctalZero,lpcCppOut,lpcCppOut2,lpcCppSkip,lpcFormat,lpcNumber,lpcFloat,lpcOctal,lpcOctalError,lpcNumbersCom,lpcCppParen,lpcCppBracket,lpcCppString,lpcKeywdError,lpcClosure
 syn region	lpcMulti		transparent start='\s\(case\s\|default$\|public$\|protected$\|private$\)' skip='::' end=':' contains=ALLBUT,@lpcMultiGroup
 
 syn cluster	lpcLabelGroup	contains=lpcUserLabel
@@ -451,6 +461,7 @@ if version >= 508 || !exists("did_lpc_syn_inits")
   HiLink lpcStorageClass	StorageClass
   HiLink lpcString		String
   HiLink lpcStructure		Structure
+  HiLink lpcClosure		Structure
   HiLink lpcSpecial		LineNr
   HiLink lpcTodo		Todo
   HiLink lpcType		Type
